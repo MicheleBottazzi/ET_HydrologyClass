@@ -1,0 +1,44 @@
+import static oms3.SimBuilder.instance as OMS3
+def home = oms_prj
+// start and end date of the simulation
+def startDate	=	"2010-07-30 12:00"
+def endDate		=	"2010-07-30 12:00"
+OMS3.sim {
+	resource "$oms_prj/lib"	
+	model(while : "reader_data_airT.doProcess"  ) {
+		components {    
+			"reader_data_airT"            			"org.jgrasstools.gears.io.rasterreader.OmsRasterReader"
+			//"reader_data_RH"            			"org.jgrasstools.gears.io.timedependent.OmsTimeSeriesIteratorReader"
+			"reader_dem"                  			"org.jgrasstools.gears.io.rasterreader.OmsRasterReader"                
+			"reader_sky"                  			"org.jgrasstools.gears.io.rasterreader.OmsRasterReader"
+			"swrb"                        			"swrbRasterCase.ShortwaveRadiationBalanceRasterCase"
+			"writer_direct"               			"org.jgrasstools.gears.io.rasterwriter.OmsRasterWriter" 					
+			"writer_diffuse"              			"org.jgrasstools.gears.io.rasterwriter.OmsRasterWriter" 
+			"writer_topATM"							"org.jgrasstools.gears.io.rasterwriter.OmsRasterWriter"         
+			}  
+			parameter{   		
+				"swrb.tStartDate"					"${startDate}"   
+				"swrb.doHourly"						true   //or false if daily   
+				// parameters reader data input air temperature             
+				"reader_dem.file"					"${home}/data/raster/dem200.asc"
+				"reader_data_airT.file"				"${home}/output/Mappa_TemperatureLoc_20100730_1200.asc"
+				"reader_sky.file"					"${home}/output/Radiation/skyviewRaster.asc"	
+				"swrb.pCmO3"                        0.6		// parametri da letteratura
+				"swrb.pAlphag"						0.9		// parametri da letteratura
+				"swrb.pVisibility"					80		// parametri da letteratura       
+				"writer_direct.file"						"${home}/output/Radiation/ShortwaveDirectRaster.asc" 					
+				"writer_diffuse.file"              		"${home}/output/Radiation/ShortwaveDiffuseRaster.asc" 
+				"writer_topATM.file"						"${home}/output/Radiation/ShortwaveTOARaster.asc" 
+				}
+				connect {
+					"reader_data_airT.outRaster"  	"swrb.inTempGrid"
+					"reader_dem.outRaster"      	"swrb.inDem"    
+					"reader_sky.outRaster"      	"swrb.inSkyview"  
+					"swrb.outDirectGrid"          	"writer_direct.inRaster"
+					"swrb.outDiffuseGrid"			"writer_diffuse.inRaster"
+					"swrb.outTopATMGrid"          	"writer_topATM.inRaster"
+					}
+			}
+	}
+
+

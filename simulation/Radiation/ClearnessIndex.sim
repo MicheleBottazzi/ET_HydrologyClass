@@ -1,0 +1,65 @@
+import static oms3.SimBuilder.instance as OMS3
+def home = oms_prj
+
+// start and end date of the simulation
+def startDate	=	"2006-07-01 00:00"
+def endDate		=	"2006-07-31 23:30"
+
+OMS3.sim {
+
+resource "$oms_prj/lib"
+
+ model(while: "reader_data_SWRB_measured.doProcess" ) {
+   components {
+    
+        // components: reader data input, clearness index and writer data output 
+        "reader_data_SWRB_measured"            "org.jgrasstools.gears.io.timedependent.OmsTimeSeriesIteratorReader"
+        "reader_data_SWRB_top"                 "org.jgrasstools.gears.io.timedependent.OmsTimeSeriesIteratorReader"
+        "CI"                                   "clearnessIndex.ClearnessIndexPointCase"
+        "writer_CI"                            "org.jgrasstools.gears.io.timedependent.OmsTimeSeriesIteratorWriter" 
+            
+         
+   }
+
+  
+   parameter{
+   
+        // parameters reader data input SW measured 
+        "reader_data_SWRB_measured.file"             "${home}/data/Temp.csv" 
+        "reader_data_SWRB_measured.idfield"          "ID"  
+        "reader_data_SWRB_measured.tStart"           "${startDate}"
+        "reader_data_SWRB_measured.tEnd"             "${endDate}"
+        "reader_data_SWRB_measured.tTimestep"          30
+        "reader_data_SWRB_measured.fileNovalue"      "-9999"
+        
+        
+        // parameters reader data input SW top  atmosphere
+        "reader_data_SWRB_top.file"             "${home}/output/Radiation/ShortwaveTOA.csv" 
+        "reader_data_SWRB_top.idfield"          "ID"  
+        "reader_data_SWRB_top.tStart"           "${startDate}"
+        "reader_data_SWRB_top.tEnd"             "${endDate}"
+        "reader_data_SWRB_top.tTimestep"         30
+        "reader_data_SWRB_top.fileNovalue"      "-9999"
+   
+
+            
+        // parameters reader data input clearness index  
+        "writer_CI.file"                   "${home}/output/Radiation/CI.csv" 
+        "writer_CI.tStart"                 "${startDate}"
+        "writer_CI.fileNovalue"			   "-9999"
+        "writer_CI.tTimestep"              30
+        
+
+   }
+    connect {
+        
+        "reader_data_SWRB_measured.outData"             "CI.inSWRBMeasuredValues"
+        "reader_data_SWRB_top.outData"                  "CI.inSWRBTopATMValues"
+        "CI.outCIHM"                                    "writer_CI.inData"
+
+   }
+
+ }
+}
+
+

@@ -1,0 +1,93 @@
+import static oms3.SimBuilder.instance as OMS3
+import static oms3.SimBuilder.*
+def home = oms_prj
+
+
+def startDate = "2006-07-01 00:00"
+def endDate = "2006-07-31 23:30"
+def timestep = 30
+OMS3.sim {
+	resource "$oms_prj/lib"
+	model(while:"readerDataTemperature.doProcess") {
+		components {
+			
+			"readerDataTemperature"           			"org.jgrasstools.gears.io.timedependent.OmsTimeSeriesIteratorReader"
+			"readerDataHumidity"          				"org.jgrasstools.gears.io.timedependent.OmsTimeSeriesIteratorReader"
+			"readerDataShortWaveDirect"         		"org.jgrasstools.gears.io.timedependent.OmsTimeSeriesIteratorReader"
+    		"readerDataPressure"          				"org.jgrasstools.gears.io.timedependent.OmsTimeSeriesIteratorReader"
+			"readerDataSoilMosture"          			"org.jgrasstools.gears.io.timedependent.OmsTimeSeriesIteratorReader"	
+			"readerCentroids"							"org.jgrasstools.gears.io.shapefile.OmsShapefileFeatureReader"		       
+			"Resistance"                    			"etpPointCase.OmsResistance"   
+			"stressResistanceWriter"                  	"org.jgrasstools.gears.io.timedependent.OmsTimeSeriesIteratorWriter"   
+			
+			}
+			parameter{  			
+				"readerDataTemperature.file"          	"${home}/data/Temp.csv"
+				"readerDataTemperature.idfield"       	"val"  
+				"readerDataTemperature.tStart"        	"${startDate}"
+				"readerDataTemperature.tEnd"			"${endDate}"
+				"readerDataTemperature.tTimestep"		"${timestep}"
+				"readerDataTemperature.fileNovalue"   	"-9999.0"				        		
+	       
+					
+				"readerDataHumidity.file"         		"${home}/data/RH.csv"
+				"readerDataHumidity.idfield"      		"val"  
+				"readerDataHumidity.tStart"       		"${startDate}"
+				"readerDataHumidity.tEnd"         		"${endDate}"
+				"readerDataHumidity.tTimestep"    		"${timestep}"
+				"readerDataHumidity.fileNovalue"  		"-9999.0"	
+				
+				"readerDataShortWaveDirect.file"		"${home}/data/SwDirect.csv" 
+				"readerDataShortWaveDirect.idfield"		"val"
+				"readerDataShortWaveDirect.tStart"		"${startDate}"
+				"readerDataShortWaveDirect.tEnd"		"${endDate}"
+				"readerDataShortWaveDirect.tTimestep"	"${timestep}"
+				"readerDataShortWaveDirect.fileNovalue"	"-9999.0"				
+				
+				"readerDataPressure.file"         		"${home}/data/Pres.csv" 
+				"readerDataPressure.idfield"      		"val"  
+				"readerDataPressure.tStart"       		"${startDate}"
+				"readerDataPressure.tEnd"         		"${endDate}"
+				"readerDataPressure.tTimestep"    		"${timestep}"
+				"readerDataPressure.fileNovalue"  		"-9999.0"       
+				
+				"readerDataSoilMosture.file"         	"${home}/data/SWC.csv" 
+				"readerDataSoilMosture.idfield"      	"val"  
+				"readerDataSoilMosture.tStart"       	"${startDate}"
+				"readerDataSoilMosture.tEnd"         	"${endDate}"
+				"readerDataSoilMosture.tTimestep"    	"${timestep}"
+				"readerDataSoilMosture.fileNovalue"  	"-9999.0"        			
+				
+				"Resistance.alpha" 	0.005
+        		"Resistance.theta" 	0.85
+       	 		"Resistance.d"  	1.1
+        		"Resistance.e"  	0.63
+     	
+        		"Resistance.T1"  	"-5.0"
+        		"Resistance.T0"  	20.0
+        		"Resistance.Th"  	45.0
+     	
+        		"Resistance.f" 		"-40.0E-6"
+
+        		"Resistance.thetaW"	0.205
+        		"Resistance.thetaC" 0.30
+        
+				"readerCentroids.file"					"${home}/data/Stations.shp"
+				"Resistance.idCentroids"            	"id"
+				"Resistance.centroidElevation"			"Elevation"
+				    		
+				"stressResistanceWriter.file"        	"${home}/data/stress.csv" 
+				"stressResistanceWriter.tStart"       	"${startDate}"
+				"stressResistanceWriter.tTimestep"   	"${timestep}"
+				}
+				connect {
+					"readerDataTemperature.outData"		"Resistance.inAirTemperature"
+					"readerDataHumidity.outData"  		"Resistance.inRelativeHumidity"
+					"readerDataShortWaveDirect.outData" "Resistance.inShortWaveRadiationDirect"
+					"readerDataPressure.outData"		"Resistance.inAtmosphericPressure"
+					"readerDataSoilMosture.outData"		"Resistance.inSoilMosture"	
+					"readerCentroids.geodata"			"Resistance.inCentroids"		
+					"Resistance.outStressResistance"	"stressResistanceWriter.inData"	        			        	
+					}
+			}
+	}
